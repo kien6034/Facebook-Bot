@@ -1,8 +1,10 @@
 from distutils.log import error
 from selenium import webdriver
+import selenium
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 from time import sleep
 import sys, os
 from dotenv import load_dotenv
@@ -15,7 +17,9 @@ class Crawler:
     def __init__(self) -> None:
        self.browser = None 
        self.group = None 
-       self.posts = []
+       self.posts = pd.DataFrame()
+
+       self.tests = {}
        self.__connect__()
     
     def __connect__(self):
@@ -56,9 +60,6 @@ class Crawler:
 
     
     def get_group_posts(self, page_loads = 5):
-        self.posts = self.group.find_elements(by=By.CSS_SELECTOR, value="div.g4tp4svg.mfclru0v.om3e55n1.p8bdhjjv")
-        print(f"{len(self.posts)} posts found \n")
-
         i = 0 
         while True:
             # Get posts every 2 page load 
@@ -72,20 +73,37 @@ class Crawler:
                 self.analyze_post(post)
           
             if i >= page_loads:
+                print(self.tests)
                 break
         
 
-    def analyze_post(self, post):
+    def analyze_post(self, post: WebElement):
         sections = post.find_elements(by= By.CSS_SELECTOR, value=".jroqu855.nthtkgg5")
-        name = sections[0]
+        header_section = sections[0]
         date = sections[1]
         #TODO: get the date 
 
-        content = post.find_elements(by= By.CSS_SELECTOR, value=".m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.gh25dzvf")
-        print(name.text)
-        if len(content) > 1: 
-            print(content[1].text)
-        else:
-            print(content[0].text)
+        content_section = post.find_elements(by= By.CSS_SELECTOR, value=".m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.gh25dzvf")
 
-        print("---------------------------------------- \n \n") 
+        author_name = header_section.text 
+        post_content = None 
+
+        post_content1 = None 
+        post_content0 = content_section[0].text
+        if len(content_section)> 1:
+            post_content1 = content_section[1].text
+
+        if post_content0 != "":
+            post_content = post_content0
+        else:
+            post_content = post_content1
+        
+        if post_content != None:
+            post_content.replace("\n", " ")
+      
+        key = author_name + post_content0[0:2]
+
+        self.tests[key] = {
+            "author": author_name,
+            "content": post_content,
+        }
