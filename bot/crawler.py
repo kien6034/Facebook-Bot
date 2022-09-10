@@ -1,4 +1,5 @@
 from distutils.log import error
+from turtle import pos
 from selenium import webdriver
 import selenium
 from selenium.webdriver.chrome.service import Service
@@ -19,7 +20,7 @@ class Crawler:
        self.group = None 
        self.posts = pd.DataFrame()
 
-       self.tests = {}
+       self.data = {}
        self.__connect__()
     
     def __connect__(self):
@@ -59,7 +60,7 @@ class Crawler:
         
 
     
-    def get_group_posts(self, page_loads = 5):
+    def get_group_posts(self, page_loads = 1):
         i = 0 
         while True:
             # Get posts every 2 page load 
@@ -73,7 +74,8 @@ class Crawler:
                 self.analyze_post(post)
           
             if i >= page_loads:
-                print(self.tests)
+                self.get_df_posts()
+
                 break
         
 
@@ -99,11 +101,21 @@ class Crawler:
             post_content = post_content1
         
         if post_content != None:
-            post_content.replace("\n", " ")
+            post_content.replace('\n', " ")
       
         key = author_name + post_content0[0:2]
 
-        self.tests[key] = {
+        self.data[key] = {
             "author": author_name,
             "content": post_content,
         }
+    
+
+    def get_df_posts(self):
+        data = []
+
+        for post in self.data:
+            data.append(self.data[post])
+
+        self.posts=  pd.DataFrame(data)
+       
