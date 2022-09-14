@@ -6,13 +6,12 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 import sys, os
 from dotenv import load_dotenv
 import pandas as pd
 load_dotenv()
-
-LOAD_POSTS_AFTER  = 3 
 
 class Crawler: 
     def __init__(self) -> None:
@@ -21,6 +20,7 @@ class Crawler:
        self.posts = pd.DataFrame()
 
        self.data = {}
+       self.action = None 
        self.__connect__()
     
     def __connect__(self):
@@ -29,7 +29,11 @@ class Crawler:
             chrome_options = webdriver.ChromeOptions()
             prefs = {"profile.default_content_setting_values.notifications" : 2}
             chrome_options.add_experimental_option("prefs",prefs)
+            #chrome_options.add_argument("--headless")  # Chrome browser won't physically open on your machine 
+            #chrome_options.add_argument("--no-sandbox")  # Chrome browser won't physically open on your machine 
+
             self.browser = webdriver.Chrome(service=s, options=chrome_options)
+            self.action = ActionChains(self.browser)
         except error:
             print(f"Can't get the browser instance: {error}")
             sys.exit(1)
@@ -54,13 +58,14 @@ class Crawler:
     def go_to_group(self, group_url):
         self.browser.get(group_url)
         self.group = self.browser.find_element(by=By.TAG_NAME, value="html")
+        sleep(2)
         self.group.send_keys(Keys.END)
         sleep(2)
 
         
 
     
-    def get_group_posts(self, page_loads = 1):
+    def get_group_posts(self, page_loads = 5):
         i = 0 
         while True:
             # Get posts every 2 page load 
@@ -68,11 +73,15 @@ class Crawler:
             self.group.send_keys(Keys.END)
             i += 1
             sleep(2)
+            self.group = self.browser.find_element(by=By.TAG_NAME, value="html")
             posts = self.group.find_elements(by=By.CSS_SELECTOR, value="div.g4tp4svg.mfclru0v.om3e55n1.p8bdhjjv")
-
             for post in posts:
                 self.analyze_post(post)
-          
+                print("---------------\n\n")
+                break
+            break
+            
+
             if i >= page_loads:
                 self.get_df_posts()
 
@@ -82,12 +91,31 @@ class Crawler:
     def analyze_post(self, post: WebElement):
         sections = post.find_elements(by= By.CSS_SELECTOR, value=".jroqu855.nthtkgg5")
         header_section = sections[0]
-        date = sections[1]
-        #TODO: get the date 
-
-        content_section = post.find_elements(by= By.CSS_SELECTOR, value=".m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.gh25dzvf")
-
+        date_section = sections[1]
+        
+        # Get author name 
         author_name = header_section.text 
+        
+        # # Get href 
+        # post_date_panel = date_section.find_element(by=By.CSS_SELECTOR, value=".qi72231t.nu7423ey.n3hqoq4p")
+        # print(post_date_panel.get_attribute("innerHTML"))
+        # try:
+        #     self.action.move_to_element(post_date_panel).perform()
+        #     sleep(1)
+        #     href= post_date_panel.get_attribute("href")
+        #     print(href)
+        # except:
+        #     print("Cannot detect date panel")
+       
+        # Commnets 
+        comment_sections = post.find_element(by=By.CSS_SELECTOR, value=".k0kqjr44.laatuukc")
+        comments_dates = comment_sections.find_elements(by= By.CSS_SELECTOR, value =".qi72231t.nu7423ey.n3hqoq4p.r86q59rh.b3qcqh3k.fq87ekyn.bdao358l.fsf7x5fv.rse6dlih.s5oniofx.m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.srn514ro.oxkhqvkx.rl78xhln.nch0832m.cr00lzj9.rn8ck1ys.s3jn8y49.icdlwmnq.cxfqmxzd.rtxb060y.gh55jysx")
+        relative_date=  comments_dates[0].text
+        # ---end comments 
+
+        
+        # Get contents 
+        content_section = post.find_elements(by= By.CSS_SELECTOR, value=".m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.gh25dzvf")
         post_content = None 
 
         post_content1 = None 
@@ -108,9 +136,14 @@ class Crawler:
         self.data[key] = {
             "author": author_name,
             "content": post_content,
+            "href": href,
+            "relative_date": relative_date
         }
-    
 
+        print(self.data)
+
+
+    
     def get_df_posts(self):
         data = []
 
@@ -119,3 +152,4 @@ class Crawler:
 
         self.posts=  pd.DataFrame(data)
        
+    
