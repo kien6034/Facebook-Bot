@@ -78,71 +78,12 @@ class Crawler:
             for post in posts:
                 self.analyze_post(post)
                 print("---------------\n\n")
-                break
-            break
             
-
             if i >= page_loads:
                 self.get_df_posts()
 
                 break
         
-
-    def analyze_post(self, post: WebElement):
-        sections = post.find_elements(by= By.CSS_SELECTOR, value=".jroqu855.nthtkgg5")
-        header_section = sections[0]
-        date_section = sections[1]
-        
-        # Get author name 
-        author_name = header_section.text 
-        
-        # # Get href 
-        # post_date_panel = date_section.find_element(by=By.CSS_SELECTOR, value=".qi72231t.nu7423ey.n3hqoq4p")
-        # print(post_date_panel.get_attribute("innerHTML"))
-        # try:
-        #     self.action.move_to_element(post_date_panel).perform()
-        #     sleep(1)
-        #     href= post_date_panel.get_attribute("href")
-        #     print(href)
-        # except:
-        #     print("Cannot detect date panel")
-       
-        # Commnets 
-        comment_sections = post.find_element(by=By.CSS_SELECTOR, value=".k0kqjr44.laatuukc")
-        comments_dates = comment_sections.find_elements(by= By.CSS_SELECTOR, value =".qi72231t.nu7423ey.n3hqoq4p.r86q59rh.b3qcqh3k.fq87ekyn.bdao358l.fsf7x5fv.rse6dlih.s5oniofx.m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.srn514ro.oxkhqvkx.rl78xhln.nch0832m.cr00lzj9.rn8ck1ys.s3jn8y49.icdlwmnq.cxfqmxzd.rtxb060y.gh55jysx")
-        relative_date=  comments_dates[0].text
-        # ---end comments 
-
-        
-        # Get contents 
-        content_section = post.find_elements(by= By.CSS_SELECTOR, value=".m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.gh25dzvf")
-        post_content = None 
-
-        post_content1 = None 
-        post_content0 = content_section[0].text
-        if len(content_section)> 1:
-            post_content1 = content_section[1].text
-
-        if post_content0 != "":
-            post_content = post_content0
-        else:
-            post_content = post_content1
-        
-        if post_content != None:
-            post_content.replace('\n', " ")
-      
-        key = author_name + post_content0[0:2]
-
-        self.data[key] = {
-            "author": author_name,
-            "content": post_content,
-            "href": href,
-            "relative_date": relative_date
-        }
-
-        print(self.data)
-
-
     
     def get_df_posts(self):
         data = []
@@ -150,6 +91,80 @@ class Crawler:
         for post in self.data:
             data.append(self.data[post])
 
-        self.posts=  pd.DataFrame(data)
+        self.posts= pd.DataFrame(data)
+
+        self.posts.to_csv("data.csv")
        
+
+    def analyze_post(self, post: WebElement):
+        sections = post.find_elements(by= By.CSS_SELECTOR, value=".jroqu855.nthtkgg5")
+        try:
+            header_section = sections[0]
+            date_section = sections[1]
+        except: 
+            print("Cannot get the required sections")
+        
+        # Get author name 
+        author_name = header_section.text 
+        print(f"Getting post for: {author_name}")
+
+        # Get contents 
+        key, post_content = self.extract_content(author_name, post_content)
+        if key in self.data:
+            return 
+
+        # Get href 
+        href = self.extract_href(date_section)
+
+         
+        # Commnets 
+        relative_date= None 
+        try:
+            comment_sections = post.find_element(by=By.CSS_SELECTOR, value=".k0kqjr44.laatuukc")
+            comments_dates = comment_sections.find_elements(by= By.CSS_SELECTOR, value =".qi72231t.nu7423ey.n3hqoq4p.r86q59rh.b3qcqh3k.fq87ekyn.bdao358l.fsf7x5fv.rse6dlih.s5oniofx.m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.srn514ro.oxkhqvkx.rl78xhln.nch0832m.cr00lzj9.rn8ck1ys.s3jn8y49.icdlwmnq.cxfqmxzd.rtxb060y.gh55jysx")
+            relative_date=  comments_dates[0].text
+        except:
+            print("Cannot detect the comments")
+        # ---end comments 
+
+        
+        self.data[key] = {
+            "author": author_name,
+            "content": post_content,
+            "href": href,
+            "relative_date": relative_date
+        }
+
+
+
+    def extract_href(self, date_section: WebElement):
+        post_date_panel = date_section.find_element(by=By.CSS_SELECTOR, value=".qi72231t.nu7423ey.n3hqoq4p")
+        try:
+            self.action.move_to_element(post_date_panel).perform()
+            sleep(1)
+            href= post_date_panel.get_attribute("href")
+            return href.split("?__")[0]
+        except:
+            print("Cannot detect date panel")
+
+        return None     
+
+
+    
+    def extract_content(self, author_name, post: WebElement):
+        content_section = post.find_elements(by= By.CSS_SELECTOR, value=".m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.gh25dzvf")
+        post_content = None 
+        post_content1 = None 
+        post_content0 = content_section[0].text
+        if len(content_section)> 1:
+            post_content1 = content_section[1].text
+        if post_content0 != "":
+            post_content = post_content0
+        else:
+            post_content = post_content1
+        if post_content != None:
+            post_content.replace('\n', " ")
+        key = author_name + post_content0[0:2]
+
+        return (key, post_content)
     
