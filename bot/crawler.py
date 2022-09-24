@@ -109,7 +109,7 @@ class Crawler:
         print(f"Getting post for: {author_name}")
 
         # Get contents 
-        key, post_content = self.extract_content(author_name, post_content)
+        key, post_content = self.extract_content(author_name, post)
         if key in self.data:
             return 
 
@@ -134,8 +134,6 @@ class Crawler:
             "href": href,
             "relative_date": relative_date
         }
-
-
 
     def extract_href(self, date_section: WebElement):
         post_date_panel = date_section.find_element(by=By.CSS_SELECTOR, value=".qi72231t.nu7423ey.n3hqoq4p")
