@@ -12,7 +12,7 @@ import sys, os
 from dotenv import load_dotenv
 import pandas as pd
 load_dotenv()
-import utils 
+from bot.utils import extract_relative_date_to_timestamp
 class Crawler: 
     def __init__(self) -> None:
        self.browser = None 
@@ -25,7 +25,7 @@ class Crawler:
     
     def __connect__(self):
         try:
-            s = Service("./chromedriver/chromedriver")
+            s = Service("./bot/chromedriver/chromedriver")
             chrome_options = webdriver.ChromeOptions()
             prefs = {"profile.default_content_setting_values.notifications" : 2}
             chrome_options.add_experimental_option("prefs",prefs)
@@ -61,8 +61,6 @@ class Crawler:
         sleep(2)
         self.group.send_keys(Keys.END)
         sleep(2)
-
-        
 
     
     def get_group_posts(self, page_loads = 5):
@@ -134,7 +132,9 @@ class Crawler:
             post_content = post_content1
         if post_content != None:
             post_content.replace('\n', " ")
-        key = author_name + post_content0[0:2]
+
+        key = self._gen_key(author_name, post_content)
+        
 
         return (key, post_content)
     
@@ -176,7 +176,7 @@ class Crawler:
         except:
             print("_extract_relative_date: Cannot get the comment dates")
 
-        exact_timestamp, exact_date_time = utils.extract_relative_date_to_timestamp(relative_date)
+        exact_timestamp, exact_date_time = extract_relative_date_to_timestamp(relative_date)
         return relative_date, exact_timestamp, exact_date_time
     
     def _extract_href(self, date_section: WebElement):
@@ -191,9 +191,10 @@ class Crawler:
             return None 
 
 
-    def _gen_key():
-        pass 
+    def _gen_key(self, author_name, post_content):
+        try: 
+            return author_name + "__" + post_content[0:2]
+        except:
+            return "" 
     
 
-    def _convert_relative_data_to_time_stamp(self, relative_date):
-        pass
