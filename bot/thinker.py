@@ -1,5 +1,7 @@
 import pandas as pd 
-
+import bot.config as config 
+import datetime, sys 
+import bot.utils as utils
 
 """
     Data format:
@@ -22,15 +24,32 @@ class Thinker:
     
     def analyze_data(self, row):
         
-        self._evaluate_posting_date(row.exact_timestamp)
+        rate= self._evaluate_posting_date(row.exact_timestamp)
+        print(row.relative_date)
+        print(rate)
         print("------------------------------\n\n")
         return
 
     
     def _evaluate_posting_date(self, post_timestamp):
-        # Propose rating method: Rate the important of the date with the value of 0 -> 1 from 2 WEEKS back to current date 
-        # Using log -> more close to date, more important 
-        print(post_timestamp)
+        # Propose rating method: Rate the important of the date with the value of 0 -> 1 from  WEEK back to current date 
+        if pd.isna(post_timestamp):
+            return 0 
+
+        # Define the zero threshold     
+        post_timestamp = int(post_timestamp)
+        cur_timestamp = int(datetime.datetime.now().timestamp())
+
+        relative_timestamp = int((cur_timestamp - post_timestamp)/config.HOUR_IN_TIME_STAMP)
+
+        # For post over a week, value should be zero. For post at threshold, which is 2 days, value is 1/2 
+        threshold = int(config.WEEK_IN_TIME_STAMP / 3.5 /config.HOUR_IN_TIME_STAMP)
+
+        # using SIGMOID function to evaluate 
+        rate = utils.sigmoid(relative_timestamp, threshold)
+        return rate 
+        
+        
 
     
     def _evaluate_content(self, content):
