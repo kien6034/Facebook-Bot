@@ -1,3 +1,4 @@
+from operator import index
 import pandas as pd 
 import bot.config as config 
 import datetime, sys 
@@ -19,14 +20,15 @@ class Thinker:
 
     def run(self):
         for index, row in self.data.iterrows():
-            
             self.analyze_data(row)
     
     def analyze_data(self, row):
         
         rate= self._evaluate_posting_date(row.exact_timestamp)
-        print(row.relative_date)
-        print(rate)
+        pr, nr = self._evaluate_content(row.content)
+        print(row.content)
+        print("---\n")
+        print(f"Positive - Negative: {pr} | {nr}")
         print("------------------------------\n\n")
         return
 
@@ -52,8 +54,104 @@ class Thinker:
         
 
     
-    def _evaluate_content(self, content):
-        # Scanning the keyword 
-        # Positive key word:
-        # Negative key word 
-        print(content)
+    def _evaluate_content(self, content: str):
+ 
+        try:
+            list_of_words = content.split(" ")
+            pr, nr = self._get_content_rate(list_of_words)
+            return pr, nr
+            
+        except:
+            return -100000000, 100000000
+    
+
+    def _get_content_rate(self, list_of_words):
+        positive_key_words = [
+            {
+                "keyword": {
+                    "view biển", "sát biển", "chill", "chiu"
+                },
+                "rate": 100
+            },
+            {
+                "keyword": {
+                    "homestay", "khách sạn", "ks", "view"
+                    "cần tìm", "cần", "tư vấn", "dự định", "hỏi", "tìm", "muốn", "tham khảo",
+                    "rẻ", "nghỉ dưỡng"
+                },
+                "rate": 10
+            },
+            {
+                "keyword": {
+                    "chào", "cho", "đi"
+                },
+                "rate": 5
+            }
+        ]
+
+        negative_key_word = [
+            {
+                "keyword": {
+                    "top", "trải nghiệm"
+                },
+                "rate": -100
+            },
+            {
+                "keyword": {
+                    "nhận", "pass", "em nhận",
+                    "nhanh nhanh", "review", "khách"
+                },
+                "rate": -10
+            },
+            {
+                "keyword": {
+                    "thời tiết",
+                    "mua hàng",
+                },
+                "rate": -5
+            },
+            {
+                "keyword": {
+                    "xem thêm", "giá sỉ"
+                },
+                "rate": -10000
+            }
+        ]
+
+        pr =  0
+        p_rated_key_word = set()
+        nr = 0
+        n_rated_key_word = set()
+        for idx, _ in enumerate(list_of_words):
+            
+            word1 =  list_of_words[idx].lower()
+            word2 = None 
+            if idx  < (len(list_of_words) - 1):
+                word2 = word1 + " " + list_of_words[idx+1].lower()
+
+            for pw in positive_key_words:
+                rate = pw["rate"]
+                keyword = pw["keyword"]
+
+                if word1 in keyword and word1 not in p_rated_key_word:
+                    p_rated_key_word.add(word1)
+                    pr += rate 
+                if word2 in keyword and word2 not in p_rated_key_word:
+                    p_rated_key_word.add(word2)
+                    pr += rate 
+            
+
+            for nw in negative_key_word:
+                rate = nw["rate"]
+                keyword = nw["keyword"]
+
+                if word1 in keyword and word1 not in n_rated_key_word:
+                    n_rated_key_word.add(word1)
+                    nr += rate 
+                if word2 in keyword and word2 not in n_rated_key_word:
+                    n_rated_key_word.add(word2)
+                    nr += rate 
+        
+        return pr, nr
+    
+    

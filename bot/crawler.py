@@ -17,6 +17,7 @@ class Crawler:
     def __init__(self) -> None:
        self.browser = None 
        self.group = None 
+       self.group_name = None
        self.posts = pd.DataFrame()
 
        self.data = {}
@@ -58,6 +59,7 @@ class Crawler:
     def go_to_group(self, group_url):
         self.browser.get(group_url)
         self.group = self.browser.find_element(by=By.TAG_NAME, value="html")
+        self.group_name = group_url
         sleep(2)
         self.group.send_keys(Keys.END)
         sleep(2)
@@ -84,7 +86,6 @@ class Crawler:
     
     def get_df_posts(self):
         data = []
-
         for post in self.data:
             data.append(self.data[post])
 
@@ -105,6 +106,7 @@ class Crawler:
         print("---------------\n\n")
         
         self.data[key] = {
+            "group": self.group_name,
             "author": author_name,
             "content": post_content,
             "href": href,
@@ -123,19 +125,25 @@ class Crawler:
         content_section = post.find_elements(by= By.CSS_SELECTOR, value=".m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.gh25dzvf")
         post_content = None 
         post_content1 = None 
-        post_content0 = content_section[0].text
-        if len(content_section)> 1:
-            post_content1 = content_section[1].text
-        if post_content0 != "":
-            post_content = post_content0
-        else:
-            post_content = post_content1
-        if post_content != None:
-            post_content.replace('\n', " ")
+        post_content0 = None
 
+        try:
+            post_content0 = content_section[0].text
+
+            if len(content_section)> 1:
+                post_content1 = content_section[1].text
+            if post_content0 != "":
+                post_content = post_content0
+            else:
+                post_content = post_content1
+            if post_content != None:
+                post_content.replace('\n', " ")
+        except:
+            pass 
+
+       
         key = self._gen_key(author_name, post_content)
         
-
         return (key, post_content)
     
 
