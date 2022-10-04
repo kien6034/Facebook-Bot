@@ -92,13 +92,13 @@ class Thinker:
         negative_key_word = [
             {
                 "keyword": {
-                    "top", "trải nghiệm"
+                    "top", "trải nghiệm", "pass"
                 },
                 "rate": -100
             },
             {
                 "keyword": {
-                    "nhận", "pass", "em nhận",
+                    "nhận", "em nhận",
                     "nhanh nhanh", "review", "khách"
                 },
                 "rate": -10

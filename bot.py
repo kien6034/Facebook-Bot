@@ -1,3 +1,4 @@
+from time import sleep
 from bot.crawler import Crawler
 from bot.thinker import Thinker
 
@@ -19,5 +20,13 @@ from bot.thinker import Thinker
 
 # crawler.quit()
 
-thinker = Thinker()
-thinker.run()
+# thinker = Thinker()
+# thinker.run()
+
+
+crawler = Crawler()
+
+crawler.login()
+crawler.go_to_post("https://www.facebook.com/groups/GhienPhuQuoc/posts/2316795068483324/")
+sleep(2)
+crawler.comment()

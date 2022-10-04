@@ -13,6 +13,8 @@ from dotenv import load_dotenv
 import pandas as pd
 load_dotenv()
 from bot.utils import extract_relative_date_to_timestamp
+import bot.config as config
+
 class Crawler: 
     def __init__(self) -> None:
        self.browser = None 
@@ -204,5 +206,24 @@ class Crawler:
             return author_name + "__" + post_content[0:2]
         except:
             return "" 
-    
 
+
+    def go_to_post(self, url):
+        self.browser.get(url) 
+
+    def _upload_image(self):
+        sections = self.browser.find_elements(by=By.CSS_SELECTOR, value=".x1mnrxsn.x1w0mnb.x1rg5ohu")
+        upload_section = sections[2]
+        image_input = upload_section.find_element(by=By.TAG_NAME, value="input")
+        image_input.send_keys(config.IMAGE_PATH)
+
+
+    def comment(self):
+        text_box = self.browser.find_element(by=By.XPATH, value='//div[@aria-label="Viết bình luận"]')
+        self._upload_image()
+        text_box.send_keys(" a 😃😃 This is a comment from bot ")
+        sleep(2)
+        text_box.click()
+        sleep(1)
+        elm = text_box.find_element(by=By.XPATH,value='//span[@data-lexical-text="true"]' )
+        elm.send_keys(Keys.ENTER)
