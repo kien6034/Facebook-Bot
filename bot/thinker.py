@@ -15,7 +15,15 @@ class Thinker:
 
 
     def read_data_from_csv(self) -> pd.DataFrame:
-        return pd.read_csv("data.csv")
+        return pd.read_csv("data.csv")  
+
+    
+    def check_if_key_existed(self, key): 
+        self.data.set_index("key", inplace=True)
+
+
+        print(self.data.head())
+        return key in self.data.index
 
 
     def run(self):
@@ -50,8 +58,6 @@ class Thinker:
         # using SIGMOID function to evaluate 
         rate = utils.sigmoid(relative_timestamp, threshold)
         return rate 
-        
-        
 
     
     def _evaluate_content(self, content: str):
@@ -77,7 +83,7 @@ class Thinker:
                 "keyword": {
                     "homestay", "khách sạn", "ks", "view"
                     "cần tìm", "cần", "tư vấn", "dự định", "hỏi", "tìm", "muốn", "tham khảo",
-                    "rẻ", "nghỉ dưỡng"
+                    "rẻ", "nghỉ dưỡng", "cảm ơn"
                 },
                 "rate": 10
             },

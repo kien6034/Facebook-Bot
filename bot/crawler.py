@@ -67,7 +67,7 @@ class Crawler:
         sleep(2)
 
     
-    def get_group_posts(self, page_loads = 5):
+    def get_group_posts(self, page_loads = 1):
         i = 0 
         while True:
             # Get posts every 2 page load 
@@ -76,7 +76,9 @@ class Crawler:
             i += 1
             sleep(2)
             self.group = self.browser.find_element(by=By.TAG_NAME, value="html")
-            posts = self.group.find_elements(by=By.CSS_SELECTOR, value="div.g4tp4svg.mfclru0v.om3e55n1.p8bdhjjv")
+            posts = self.group.find_elements(by=By.CSS_SELECTOR, value=".x1ja2u2z.xh8yej3.x1n2onr6.x1yztbdb")
+            
+            print(f"Find: {len(posts)}")
             for post in posts:
                 self.analyze_post(post)
                 
@@ -88,11 +90,13 @@ class Crawler:
     
     def get_df_posts(self):
         data = []
-        for post in self.data:
-            data.append(self.data[post])
+        for post_key in self.data:
+            post_data = self.data[post_key]
+            post_data["key"] = post_key
+            data.append(self.data[post_key])
 
         self.posts= pd.DataFrame(data)
-
+        self.posts.set_index(["key"], drop=False, inplace=True)
         self.posts.to_csv("data.csv")
        
 
@@ -124,7 +128,7 @@ class Crawler:
 
     
     def extract_content(self, author_name, post: WebElement):
-        content_section = post.find_elements(by= By.CSS_SELECTOR, value=".m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.gh25dzvf")
+        content_section = post.find_elements(by= By.CSS_SELECTOR, value=".xdj266r.x11i5rnm.xat24cr.x1mh8g0r.x1vvkbs")
         post_content = None 
         post_content1 = None 
         post_content0 = None
@@ -156,7 +160,7 @@ class Crawler:
         exact_timestamp = None 
         exact_date_time = None 
 
-        sections = post.find_elements(by= By.CSS_SELECTOR, value=".jroqu855.nthtkgg5")
+        sections = post.find_elements(by= By.CSS_SELECTOR, value=".xu06os2.x1ok221b")
         try:
             header_section = sections[0]
             date_section = sections[1]
@@ -169,7 +173,7 @@ class Crawler:
         href = self._extract_href(date_section)
 
         try:
-            comment_sections = post.find_element(by=By.CSS_SELECTOR, value=".k0kqjr44.laatuukc")
+            comment_sections = post.find_element(by=By.CSS_SELECTOR, value=".x1jx94hy.x12nagc")
             relative_date, exact_timestamp, exact_date_time = self._extract_relative_date(comment_sections)
         except:
             print("extract_header: Cannot detect the comment section")
@@ -181,7 +185,7 @@ class Crawler:
         
         relative_date = None 
         try:
-            comments_dates = comment_sections.find_elements(by= By.CSS_SELECTOR, value =".qi72231t.nu7423ey.n3hqoq4p.r86q59rh.b3qcqh3k.fq87ekyn.bdao358l.fsf7x5fv.rse6dlih.s5oniofx.m8h3af8h.l7ghb35v.kjdc1dyq.kmwttqpk.srn514ro.oxkhqvkx.rl78xhln.nch0832m.cr00lzj9.rn8ck1ys.s3jn8y49.icdlwmnq.cxfqmxzd.rtxb060y.gh55jysx")
+            comments_dates = comment_sections.find_elements(by= By.CSS_SELECTOR, value =".x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xt0psk2.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.xt0b8zv.xi81zsa.x1fcty0u")
             relative_date =  comments_dates[0].text 
         except:
             print("_extract_relative_date: Cannot get the comment dates")
@@ -191,7 +195,7 @@ class Crawler:
     
     def _extract_href(self, date_section: WebElement):
         try:
-            post_date_panel = date_section.find_element(by=By.CSS_SELECTOR, value=".qi72231t.nu7423ey.n3hqoq4p")
+            post_date_panel = date_section.find_element(by=By.CSS_SELECTOR, value=".x193iq5w.xeuugli.x13faqbe.x1vvkbs")
             self.action.move_to_element(post_date_panel).perform()
             sleep(1)
             href= post_date_panel.get_attribute("href")
