@@ -62,7 +62,7 @@ class Crawler:
         self.browser.get(group_url)
         self.group = self.browser.find_element(by=By.TAG_NAME, value="html")
         self.group_name = group_url
-        sleep(2)
+        sleep(3)
         self.group.send_keys(Keys.END)
         sleep(2)
 
@@ -74,7 +74,7 @@ class Crawler:
             
             self.group.send_keys(Keys.END)
             i += 1
-            sleep(2)
+            sleep(3)
             self.group = self.browser.find_element(by=By.TAG_NAME, value="html")
             posts = self.group.find_elements(by=By.CSS_SELECTOR, value=".x1ja2u2z.xh8yej3.x1n2onr6.x1yztbdb")
             
@@ -118,9 +118,10 @@ class Crawler:
             "exact_timestamp": exact_timestamp,
             "exact_date_time": exact_date_time,
             "relative_date": relative_date,
-            "date_rate": None,
-            "positive_rate": None,
-            "negative_rate": None,
+            "date_rate": 0,
+            "positive_rate": 0,
+            "negative_rate": 0,
+            "rate": 0,
             "is_commented": 0
         }
 
@@ -198,7 +199,7 @@ class Crawler:
     
     def _extract_href(self, date_section: WebElement):
         try:
-            post_date_panel = date_section.find_element(by=By.CSS_SELECTOR, value=".x193iq5w.xeuugli.x13faqbe.x1vvkbs")
+            post_date_panel = date_section.find_element(by=By.CSS_SELECTOR, value=".x1i10hfl.xjbqb8w.x6umtig.x1b1mbwd.xaqea5y.xav7gou.x9f619.x1ypdohk.xt0psk2.xe8uvvx.xdj266r.x11i5rnm.xat24cr.x1mh8g0r.xexx8yu.x4uap5.x18d9i69.xkhd6sd.x16tdsg8.x1hl2dhg.xggy1nq.x1a2a7pz.x1heor9g.xt0b8zv.xo1l8bm")
             self.action.move_to_element(post_date_panel).perform()
             sleep(1)
             href= post_date_panel.get_attribute("href")
@@ -213,7 +214,6 @@ class Crawler:
             return author_name + "__" + post_content[0:2]
         except:
             return "" 
-
 
     def go_to_post(self, url):
         self.browser.get(url) 
@@ -234,3 +234,30 @@ class Crawler:
         sleep(1)
         elm = text_box.find_element(by=By.XPATH,value='//span[@data-lexical-text="true"]' )
         elm.send_keys(Keys.ENTER)
+
+
+    def read_data_from_csv(self) -> pd.DataFrame:
+        return pd.read_csv("data.csv")  
+
+    def run(self):
+        data = self.read_data_from_csv()
+
+        for index, row in data.iterrows():
+            # mark bad row as commented 
+            if row.rate <= 0.5 or row.href == None:
+                data.at[index, "is_commented"] =  -1
+
+            if row.rate > 0.5 and row.is_commented == 0:
+                # comment 
+                try:
+                    print(row.href)
+                    self.go_to_post(row.href)
+                    sleep(2)
+                    self.comment()
+
+                    # mark row as commented 
+                    data.at[index, "is_commented"] = 1
+                except:
+                    print("comment fail") 
+
+        data.to_csv("data.csv", index=False)

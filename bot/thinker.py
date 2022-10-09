@@ -22,10 +22,10 @@ class Thinker:
         for index, row in self.data.iterrows():
             dr, pr, nr = self.analyze_data(row)
             rate = self.get_comment_rate(dr, pr, nr)
-            print(row.relative_date)
             self.data.at[index, "date_rate"] = dr
             self.data.at[index,"positive_rate"] = pr
             self.data.at[index, "negative_rate"] = nr
+            self.data.at[index, "rate"] = rate
             print("--------\n\n")
         
         self.data.to_csv("data.csv", index=False)
