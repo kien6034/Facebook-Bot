@@ -21,13 +21,27 @@ class Thinker:
     def run(self):
         for index, row in self.data.iterrows():
             dr, pr, nr = self.analyze_data(row)
-            self.data.loc[index]["date_rate"] = dr
-            self.data.loc[index]["positive_rate"] = pr
-            self.data.loc[index]["negative_rate"] = nr
+            rate = self.get_comment_rate(dr, pr, nr)
+            print(row.relative_date)
+            self.data.at[index, "date_rate"] = dr
+            self.data.at[index,"positive_rate"] = pr
+            self.data.at[index, "negative_rate"] = nr
+            print("--------\n\n")
+        
+        self.data.to_csv("data.csv", index=False)
 
     
     def determine_rating(self, data):
         pass
+
+    def get_comment_rate(self, dr, pr, nr):
+        content_score = pr + nr
+        content_rate = utils.sigmoid(content_score, 0)
+
+        rate = (dr + content_rate ) / 2
+        print(f"dr: {dr}, content_rate: {content_rate}, rate: {rate}")
+        return rate 
+
 
     def analyze_data(self, row):
         dr= self._evaluate_posting_date(row.exact_timestamp)
@@ -45,13 +59,13 @@ class Thinker:
         post_timestamp = int(post_timestamp)
         cur_timestamp = int(datetime.datetime.now().timestamp())
 
-        relative_timestamp = int((cur_timestamp - post_timestamp)/config.HOUR_IN_TIME_STAMP)
+        relative_timestamp = int((cur_timestamp - post_timestamp)/ config.HOUR_IN_TIME_STAMP)
 
         # For post over a week, value should be zero. For post at threshold, which is 2 days, value is 1/2 
-        threshold = int(config.WEEK_IN_TIME_STAMP / 3.5 /config.HOUR_IN_TIME_STAMP)
+        threshold = int(config.WEEK_IN_TIME_STAMP / 2.32 /config.HOUR_IN_TIME_STAMP)
 
         # using SIGMOID function to evaluate 
-        rate = utils.sigmoid(relative_timestamp, threshold)
+        rate = utils.inversed_sigmoid(relative_timestamp, threshold)
         return rate 
 
     
@@ -72,7 +86,7 @@ class Thinker:
                 "keyword": {
                     "view biển", "sát biển", "chill", "chiu"
                 },
-                "rate": 100
+                "rate": 5
             },
             {
                 "keyword": {
@@ -80,13 +94,13 @@ class Thinker:
                     "cần tìm", "cần", "tư vấn", "dự định", "hỏi", "tìm", "muốn", "tham khảo",
                     "rẻ", "nghỉ dưỡng", "cảm ơn"
                 },
-                "rate": 10
+                "rate": 1
             },
             {
                 "keyword": {
                     "chào", "cho", "đi"
                 },
-                "rate": 5
+                "rate": 0.5
             }
         ]
 
@@ -95,21 +109,21 @@ class Thinker:
                 "keyword": {
                     "top", "trải nghiệm", "pass"
                 },
-                "rate": -100
+                "rate": -5
             },
             {
                 "keyword": {
                     "nhận", "em nhận",
                     "nhanh nhanh", "review", "khách"
                 },
-                "rate": -10
+                "rate": -2
             },
             {
                 "keyword": {
                     "thời tiết",
                     "mua hàng",
                 },
-                "rate": -5
+                "rate": -1
             },
             {
                 "keyword": {

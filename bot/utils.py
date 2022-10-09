@@ -40,7 +40,7 @@ def extract_relative_date_to_timestamp(rd):
 
 
 
-def sigmoid(current_value, threshold):
+def inversed_sigmoid(current_value, threshold):
     #https://datascience.stackexchange.com/questions/22639/how-to-determine-threshold-in-sigmoid-function
     x = threshold - current_value 
     
@@ -49,3 +49,15 @@ def sigmoid(current_value, threshold):
     except:
         # handle if X is too large 
         return 0
+
+
+def sigmoid(current_value, threshold):
+    #https://datascience.stackexchange.com/questions/22639/how-to-determine-threshold-in-sigmoid-function
+    x = current_value - threshold
+    
+    try:
+        return 1 / (1 + math.exp(-x))
+    except:
+        # handle if X is too large 
+        return 0
+

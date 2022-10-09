@@ -121,7 +121,7 @@ class Crawler:
             "date_rate": None,
             "positive_rate": None,
             "negative_rate": None,
-            "is_commented": False
+            "is_commented": 0
         }
 
   

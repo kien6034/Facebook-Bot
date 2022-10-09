@@ -5,13 +5,14 @@ from bot.thinker import Thinker
 crawler = Crawler()
 group_url = [
     "https://www.facebook.com/groups/GhienPhuQuoc",
+    "https://www.facebook.com/groups/799500246879488",
+    "https://www.facebook.com/groups/reviewphuquockiengiang/",
+    "https://www.facebook.com/groups/314463613422569/",
+    "https://www.facebook.com/groups/1105257046642653"
    
 ]
 
-#  "https://www.facebook.com/groups/799500246879488",
-#     "https://www.facebook.com/groups/reviewphuquockiengiang/",
-#     "https://www.facebook.com/groups/314463613422569/",
-#     "https://www.facebook.com/groups/1105257046642653"
+
 crawler.login()
 
 for url in group_url:
