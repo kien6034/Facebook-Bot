@@ -96,8 +96,7 @@ class Crawler:
             data.append(self.data[post_key])
 
         self.posts= pd.DataFrame(data)
-        self.posts.set_index(["key"], drop=False, inplace=True)
-        self.posts.to_csv("data.csv")
+        self.posts.to_csv("new.csv", index= False)
        
 
     def analyze_post(self, post: WebElement):
@@ -118,7 +117,11 @@ class Crawler:
             "href": href,
             "exact_timestamp": exact_timestamp,
             "exact_date_time": exact_date_time,
-            "relative_date": relative_date
+            "relative_date": relative_date,
+            "date_rate": None,
+            "positive_rate": None,
+            "negative_rate": None,
+            "is_commented": False
         }
 
   

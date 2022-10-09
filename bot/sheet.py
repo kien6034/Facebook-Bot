@@ -1,6 +1,7 @@
 import gspread 
 import json 
 from gspread.spreadsheet import Spreadsheet
+import pandas as pd 
 
 class Sheet:
     def __init__(self) -> None:
@@ -9,8 +10,16 @@ class Sheet:
         self.type = 0 
         self.sh = None 
         self.wks = None 
+
+        self.data = self.read_data_from_csv("data.csv")
+        self.new = self.read_data_from_csv("new.csv")
      
     
+    def read_data_from_csv(self, file_name) -> pd.DataFrame:
+        return pd.read_csv(file_name)  
+
+    
+ 
 
     def set_sheet(self, sheet_name):
         self.sh = self.sa.open(sheet_name)

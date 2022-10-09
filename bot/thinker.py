@@ -17,30 +17,25 @@ class Thinker:
     def read_data_from_csv(self) -> pd.DataFrame:
         return pd.read_csv("data.csv")  
 
-    
-    def check_if_key_existed(self, key): 
-        self.data.set_index("key", inplace=True)
-
-
-        print(self.data.head())
-        return key in self.data.index
-
 
     def run(self):
         for index, row in self.data.iterrows():
-            self.analyze_data(row)
-    
-    def analyze_data(self, row):
-        
-        rate= self._evaluate_posting_date(row.exact_timestamp)
-        pr, nr = self._evaluate_content(row.content)
-        print(row.content)
-        print("---\n")
-        print(f"Positive - Negative: {pr} | {nr}")
-        print("------------------------------\n\n")
-        return
+            dr, pr, nr = self.analyze_data(row)
+            self.data.loc[index]["date_rate"] = dr
+            self.data.loc[index]["positive_rate"] = pr
+            self.data.loc[index]["negative_rate"] = nr
 
     
+    def determine_rating(self, data):
+        pass
+
+    def analyze_data(self, row):
+        dr= self._evaluate_posting_date(row.exact_timestamp)
+        pr, nr = self._evaluate_content(row.content)
+        return dr, pr, nr
+
+ 
+
     def _evaluate_posting_date(self, post_timestamp):
         # Propose rating method: Rate the important of the date with the value of 0 -> 1 from  WEEK back to current date 
         if pd.isna(post_timestamp):
